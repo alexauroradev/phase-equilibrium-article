@@ -1,0 +1,264 @@
+\documentclass[12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+
+\renewcommand{\arraystretch}{1.2}
+
+\title{Расчет фазового равновесия}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\let\dividesymbol\div
+\renewcommand{\div}{\operatorname{div}}
+\newcommand{\grad}{\operatorname{grad}}
+
+\newtheorem{note}{Примечание}[section]
+
+\begin{document}
+\maketitle
+
+\section{Введение}
+%TODO: Написать введение
+
+\section{Двухфазное многокомпонентное состояние}
+Рассмотрим ситуацию, при которой имеется смесь из нескольких компонент,  находящаяся в двух фазах $L$ и $G$ ($L$ - жидкая (нефтяная) фаза, $G$ - газовая фаза). При этом давление $p$ и температура $T$ смеси фиксирована. Введем обозначения:
+\begin{itemize}
+\item $\mu_{i,L}, \mu_{i,G}$ --- химические потенциалы вещества  $i$ в фазах $L$ и $G$, соответственно
+\item $N_{i,L}, N_{i,G}$ --- количество молекул вещества $i$, находящихся в фазах $L$ и $G$, соответственно. При этом $N_L = \sum_i N_{i,L}$, $N_G = \sum_i N_{i,G}$ - общее количество молекул вещества, находящееся в каждой из фаз.
+\item $x_i = \dfrac{N_{i, L}}{N_L}$, $y_i = \dfrac{N_{i,G}}{N_G}$ --- мольные доли фаз. При этом $ \displaystyle \sum_i x_i = 1 $, $\displaystyle \sum_i y_i = 1 $.
+\end{itemize}
+
+Будем также считать, что выражение для химических потенциалов в фазах задаются соотношениями, верными для идеального газа \textbf{[ссылка]}:
+
+\begin{equation}
+\begin{aligned}
+\mu_{i,L} = \mu_{i,L}^0 + RT \ln x_i \\
+\mu_{i,G} = \mu_{i,G}^0 + RT \ln y_i
+\end{aligned},
+\label{eq:hid}
+\end{equation}
+где $\mu_{i,\alpha}^0 = \mu_{i,\alpha}^0(p, T)$ --- химический потенциал чистого вещества $i$, находящегося в фазе $\alpha$ при заданных давлении и температуре.
+
+Потенциал Гиббса для этой системы:
+
+\begin{equation}
+\begin{aligned}
+\Phi = \sum_i \Phi_i = \sum_{i, \alpha}{N_{i,\alpha} \mu_{i,\alpha}} = \sum_i \left(N_{i, L} \mu_{i, L} + N_{i, G} \mu_{i, G}\right)
+\end{aligned}
+\label{eq:gibbs}
+\end{equation}
+
+Условием фазового равновесия обычно считают либо условие равенства хим. потенциалов во всех фазах (в данном случае $\mu_{i, \alpha} = C_i = const$), либо условие достижения минимума потенциала Гиббса $\Phi$ по мольным долям фаз и фазовым составам, с учетом ограничений $\sum_\alpha N_{i, \alpha} = N_i$. Легко показать, что эти условия эквивалентны \textbf{[ссылка]}. Однако, второе условие является более универсальным. поскольку при минимизации отпадает необходимость рассмотрения случаев, связанных с наличием или отсутствием определенных фаз. Случаи, когда в смеси отсутствуют определенные фазы соответствуют тому, что минимум потенциала Гиббса достигается на границе области минимизации.
+
+Введем функцию Лагранжа:
+\begin{equation}
+\mathscr{L} = \Phi + \sum_i\xi_i \left[N_i - \sum_\alpha N_{i, \alpha} \right]
+\label{eq:lagr}
+\end{equation} 
+
+
+Условие минимизации функции Лагранжа \eqref{eq:lagr} для вещества $i$, учитывая соотношения \eqref{eq:hid}:
+\[
+\left\{
+\begin{aligned}
+& \pd{\mathscr{L}}{N_{i, \alpha}} = \mu_{i, \alpha} + N_{i, \alpha} \cdot RT \frac{1}{N_{i, \alpha}} - \xi_i = 0, \qquad \alpha=L, G \\
+& \pd{\mathscr{L}}{\xi_i} = N_i - \sum_{\alpha} N_{i,\alpha} = 0 
+\end{aligned}
+\right.
+\]
+
+Или:
+\begin{equation}
+\left\{
+\begin{aligned}
+& \mu_{i, G}^0 + RT \ln y_i + RT - \xi_i = 0\\
+& \mu_{i, L}^0 + RT \ln x_i + RT - \xi_i = 0\\
+& N_i - \sum_{\alpha} N_{i,\alpha} = 0
+\end{aligned}
+\label{eq:lagr2}
+\right.
+\end{equation}
+
+Вычитая в \eqref{eq:lagr2} первое уравнение из второго, получаем:
+
+\begin{equation}
+RT \ln K_i = \mu_{i, L}^0 - \mu_{i, G}^0,
+\label{eq:lnK}
+\end{equation}
+где $K_i \equiv \dfrac{y_i}{x_i}$ --- константа равновесия для вещества $i$.
+
+
+\begin{note}
+Обратите внимание на то, что выражение \eqref{eq:lnK} можно было получить напрямую из условия $\mu_1 = \mu_2$.
+\end{note}
+
+
+\section{Многофазное многокомпонентное состояние}
+
+\subsection{Постановка задачи и допущения}
+
+Рассмотрим задачу о нахождении фазового равновесия в условиях нефтяного месторождения, разрабатываемого путем водного замещения (возможно также термогазовое воздействие). При этом рассматриваются следующие фазы: $L$ --- жидкая (нефтяная) фаза, $G$ --- газ, $W$ --- водная фаза и несколько неподвижных фаз.
+
+Предлагается следующее распределение компонент по фазам:
+\begin{itemize}
+\item Одна компонента $\mathrm{H_2O}$ --- может существовать в фазе $W$ и $G$.
+\item $N_{LO}$ компонент --- легкие нефти --- могут существовать в фазах $L$ и $G$ (например, $\mathrm{C_5H_{12}}$).
+\item $N_{HO}$ компонент --- тяжелые нефти --- могут существовать только в фазе $L$.
+\item $N_{G}$ компонент --- нерастворимые газы --- могут существовать только в фазе $G$.
+\item $N_{S}$ компонент --- неподвижные компоненты-фазы --- существуют каждая в своей фазе.
+\end{itemize}
+
+\begin{note}
+Газы, растворимые в нефти, могут моделироваться как легкие нефти, поскольку они могут существовать только в газе и жидкой фазе.
+\end{note}
+
+Введем обозначения:
+\begin{itemize}
+\item $\lambda, \omega, \gamma$ --- молярные доли жидкой фазы, водной фазы и газовой фазы соответственно
+\item Поскольку в фазе $W$ может находиться только $\mathrm{H_2O}$, то $\omega$ также является молярной долей жидкой воды
+\item $c_0$ - молярная доля $\mathrm{H_2O}$
+\item $c_i, \: i = 1 \dividesymbol N_{LO}$ --- молярные доли легких нефтей
+\item $c_i, \: i = N_{LO} + 1 \dividesymbol N_{LO} + N_{HO}$ --- молярные доли тяжелый нефтей
+\item $c_i, \: i = N_{LO} + N_{HO} + 1 \dividesymbol N_{LO} + N_{HO} + N_G$ --- молярные доли нерастворимых газов
+\item $c_i, \: i = N_{LO} + N_{HO} + N_G + 1 \dividesymbol N_{LO} + N_{HO} + N_G + N_S$ --- молярные доли неподвижных компонент. Также являются молярными долями соответствующих фаз. 
+\item $\lambda_i, \: i = 1 \dividesymbol N_{LO}$ --- молярные доли легких нефтей в газовой фазе
+
+\end{itemize}
+
+В таблице \ref{t:compphases} приведен пример распределения компонент по фазам.
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{c|c|c|c|c|c|c}
+\multicolumn{1}{c}{$\diagdown$}&
+\multicolumn{1}{c}{L (нефть)}&
+\multicolumn{1}{c}{G (газ)}&
+\multicolumn{1}{c}{W (вода)}&
+\multicolumn{1}{c}{S (песчаник)}&
+\multicolumn{1}{c}{Gr (гранит)}&
+\multicolumn{1}{c}{}\\
+\cline{2-6}
+$\mathrm{H_2O}$& & $c_0 - \omega$ & $\omega$ & & & $c_0$\\
+\cline{1-6}
+$\mathrm{C_5H_{12}}$& $\lambda_1$ & $c_1 - \lambda_1$ & & & & $c_1$\\
+\cline{2-6}
+$\mathrm{C_{10}H_{22}}$& $\lambda_2$ & $c_2 - \lambda_2$ & & & & $c_2$\\
+\cline{1-6}
+$\mathrm{C_{15}H_{32}}$& $c_3$ & & & & & $c_3$\\
+\cline{1-6}
+$\mathrm{N_2}$& & $c_4$ & & & & $c_4$\\
+\cline{2-6}
+$\mathrm{CO_2}$& & $c_5$ & & & & $c_5$\\
+\cline{2-6}
+$\mathrm{O_2}$& & $c_6$ & & & & $c_6$\\
+\cline{1-6}
+$\mathrm{Sand}$& & & & $c_7$ & & $c_7$\\
+\cline{2-6}
+$\mathrm{Gran}$& & & & & $c_8$ & $c_8$\\
+\cline{2-6}
+\multicolumn{1}{c}{}&
+\multicolumn{1}{c}{$\lambda$}&
+\multicolumn{1}{c}{$\gamma$}&
+\multicolumn{1}{c}{$\omega$}&
+\multicolumn{1}{c}{}\\
+\end{tabular}
+\caption{Пример распределения компонент по фазам}
+\label{t:compphases}
+\end{table}
+
+Требуется найти распределение компонент по фазам, при известных молярных долях компонент $c_i, \; i = 0 \dividesymbol N_{LO} + N_{HO} + N_{G} + N_{S}$, давлении $p$ и температуре $T$, неявно определенной молярной энтальпией системы $\eta$. Также требуется вычислить температуру смеси.
+
+\begin{note}
+При дальнейших выкладках полагается, что фиксирована именно температура $T$, а не энтальпия $\eta$. Это обусловлено тем, что постоянство температуры является условием термодинамического равновесия системы.
+\end{note}
+
+Неизвестными величинами являются $\{\omega, \lambda_i\}$ --- $N_{LO} + 1$ неизвестная. После их определения, температура смеси вычисляется как решение нелинейного уравнения.
+
+Задачу можно сформулировать в виде задачи нелинейного программирования:
+\begin{equation}
+\begin{aligned}
+\Phi = \sum_{i, \alpha} \mu_{i, \alpha} N_{i, \alpha} \rightarrow \min_{N_{i, \alpha}},\\
+\sum_\alpha \frac{N_{i, \alpha}}{N} = c_i
+\end{aligned}
+\label{eq:problem}
+\end{equation}
+
+Распишем подробнее потенциал Гиббса, возникающий в задаче:
+
+\begin{equation}
+\begin{aligned}
+\Phi / N = \mu &= (c_0 - \omega) \mu_{\mathrm{H_2O, G}} + \omega \mu_{\mathrm{H_2O, W}} + \\
+& + \sum_{i = 1}^{N_{LO}} \left((c_i - \lambda_i) \mu_{i, G} + \lambda_i \mu_{i, L}\right) + \\
+& + \sum_{i = N_{LO} + 1}^{N_{LO} + N_{HO}} c_i \mu_{i, L} + \sum_{i = N_{LO} + N_{HO}+ 1}^{N_{LO} + N_{HO} + N_{S}} c_i \mu_{i, \alpha_i}
+\end{aligned}
+\label{eq:gibbslong}
+\end{equation}
+
+Последние два слагаемых в соотношении \eqref{eq:gibbslong} являются постоянными при заданном компонентном составе, давлении и температуре. А значит, они не влияют на решение минимизационной задачи. Преобразуем члены в правой части \eqref{eq:gibbslong}, относящиеся к $\mathrm{H_2O}$ с учетом соотношений для химического потенциала идеального газа и \eqref{eq:lnK}:
+
+\begin{equation}
+\begin{aligned}
+& (c_0 - \omega) \mu_{\mathrm{H_2O, G}} + \omega \mu_{\mathrm{H_2O, W}} = c_o \mu_{\mathrm{H_2O, G}} + \omega (\mu_{\mathrm{H_2O, W}} - \mu_{\mathrm{H_2O, G}}) = \\
+& = c_o \left(\mu_{\mathrm{H_2O, G}}^{0} + RT \ln \frac{c_0 - \omega}{\gamma}\right) + \omega RT \left(\ln K_0 + \ln \frac{\omega}{\omega} - \ln \frac{c_0 - \omega}{\gamma}\right) = \\
+& = c_o \mu_{\mathrm{H_2O, G}}^{0} + RT \left(\omega \ln K_0 + (c_0 - \omega) \ln (c_0 - \omega) - (c_0 - \omega) \ln \gamma\right),
+\end{aligned}
+\label{eq:gibbswater}
+\end{equation}
+где $K_0$ --- константа равновесия фазового перехода $W-G$ для $\mathrm{H_2O}$.
+
+Аналогично, можно преобразовать выражения для легких нефтей:
+
+\begin{equation}
+\begin{aligned}
+& \left((c_i - \lambda_i) \mu_{i, G} + \lambda_i \mu_{i, L}\right) = \\
+& = c_i \left(\mu_{i, G}^0 + RT \ln \frac{c_i - \lambda_i}{\gamma} \right) + \lambda_i RT \left(\ln K_0 + \ln \frac{\lambda_i}{\lambda} - \ln \frac{c_i - \lambda_i}{\gamma}\right) = \\
+& = c_i \mu_{i, G}^0 + RT \left(\lambda_i \ln K_i + (c_i - \lambda_i)\ln \frac{c_i - \lambda_i}{\gamma} + \lambda_i \ln \frac{\lambda_i}{\lambda} \right)
+\end{aligned}
+\label{eq:gibbsliquid}
+\end{equation}
+
+Таким образом задача \eqref{eq:problem} с учетом \eqref{eq:gibbslong}, \eqref{eq:gibbswater} и \eqref{eq:gibbsliquid}, записывается в виде:
+
+\begin{equation}
+\begin{aligned}
+\tilde{\mu} &= \omega \varkappa_0(p,T) + \sum_{i=1}^{N_{LO}} \lambda_i \varkappa_i(p,T) + \\
+&+ \sum_{i=1}^{N_{LO}} L(\lambda_i) - L(\lambda) + \\
+&+ L(c_0 - \omega) + \sum_{i=1}^{N_{LO}} L(c_i - \lambda_i) - L(s - \lambda - \omega) \rightarrow \min_{\lambda_i, \omega}
+\end{aligned}
+\end{equation}
+
+При ограничениях:
+
+\[
+\left\{
+\begin{aligned}
+0& \leq \omega \leq c_0\\
+0& \leq \lambda_i \leq c_i, \qquad i = 1,2,\dots,N_{LO}
+\end{aligned}
+\right.
+\]
+
+При этом выполняется соотношение:
+\[
+\eta = 
+\sum_{i=0}^{N_{LO}+N_{HO}+N_{G}+N_{S}} c_i h_i(p,T) -\omega h_{0,G-W}(p,T) -\sum_{i=1}^{N_{LO}} \lambda_i h_{i,G-L}(p,T) 
+\]
+
+Здесь
+\begin{itemize}
+\item $\tilde{\mu}$ --- с точностью до множителя $RT$ и аддитивной константы химический потенциал смеси
+\item $\varkappa_i(p, T) = \ln K_i(p, T)$ --- логарифмы констант равновесия
+\item $L(x) \equiv x \ln x$
+\item $s \equiv \gamma + \lambda + \omega$
+\item $h_{i,G-\alpha}(p,T)$ --- удельная энтальпия парообразования (положительная величина)
+\item $h_i(p,T)$ --- молярные энтальпии компонент в ``основной'' фазе. Для воды и легких нефтей ``основной'' фазой является $G$.
+\end{itemize}
+
+Заметим, что задача сформулирована сразу для всех компонент, а не отдельно для
+флюидов.
+
+\end{document}

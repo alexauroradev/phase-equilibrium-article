@@ -1,0 +1,545 @@
+\documentclass[12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath}
+\usepackage{mathrsfs}
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+
+\renewcommand{\arraystretch}{1.2}
+
+\title{Совместное решение уравнения энергии и уравнений переноса массы для
+задачи фильтрации}
+\author{Цыбулин Иван}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\let\dividesymbol\div
+\renewcommand{\div}{\operatorname{div}}
+\newcommand{\grad}{\operatorname{grad}}
+
+\begin{document}
+\maketitle
+
+\section{Получение уравнения для давления}
+
+Предлагается следующий метод, в котором исключаются внешние итерации по
+температуре. Главными неизвестными являются $c_i, p, E$.
+
+Система уравнений состоит из нескольких уравнений для концентраций $N_i$ и
+одного уравнения для полной энергии $E$:
+\begin{align}
+\label{eq:mass}
+\pd{N_i}{t} + \div \mathbf{Q}_i = 0\\
+\label{eq:energy}
+\pd{E}{t} + \div \mathbf{J} = 0,
+\end{align}
+где
+\begin{align*}
+N_i &= \sum_\alpha n_\alpha c_{i,\alpha} \theta_\alpha\\
+\mathbf{Q}_i &= \sum_\alpha n_\alpha c_{i,\alpha} 
+\mathbf{W}_\alpha\\
+E &= \sum_{\alpha} n_\alpha h_{\alpha} \theta_\alpha - p\\
+\mathbf{J} &= \sum_{\alpha} n_\alpha h_{\alpha}
+\mathbf{W}_\alpha.
+\end{align*}
+Рассмотрим дополнительно полную энтальпию смеси
+\[
+H = 
+\sum_{\alpha} n_\alpha h_{\alpha} \theta_\alpha = 
+\sum_{\alpha} n_\alpha \left(e_{\alpha} + \frac{p}{n_\alpha}\right) \theta_\alpha = 
+E + p \sum_{\alpha} \theta_\alpha = E + p.
+\]
+Также введем молярную энтальпию $\eta = HV = \frac{H}{N}$.
+Из уравнений (\ref{eq:mass},\ref{eq:energy}) нужно получить одно уравнение на
+давление $p$. Учтем, что $N_i = N_i(c_i, p, \eta)$, поскольку $N_i$ (и $T$) находятся из
+решения задачи о фазовом равновесии по значениям $c_i, p, \eta$.
+\[
+\sum_j \pd{N_i}{c_j} \pd{c_j}{t} + \pd{N_i}{\eta}\pd{\eta}{t} + \pd{N_i}{p} \pd{p}{t} + \div
+\mathbf{Q}_i = 0.
+\]
+Аналогично поступим с уравнением энергии, заменив $E = H - p$:
+\[
+\sum_j \pd{H}{c_j} \pd{c_j}{t} + \pd{H}{\eta}\pd{\eta}{t} + \pd{H}{p} \pd{p}{t}
+- \pd{p}{t} + \div \mathbf{J} = 0.
+\]
+
+Заметим, что $N_i = N c_i, H = N \eta$.
+\[
+V\pd{(N_i, H)}{(c_j, \eta)} = V\begin{pmatrix}
+N \delta_{ij} + c_i \pd{N}{c_j} & c_i \pd{N}{\eta}\\
+\eta \pd{N}{c_j} & N + \eta \pd{N}{\eta}
+\end{pmatrix} 
+= \mathbb{I} + \begin{pmatrix}c_i\\\eta\end{pmatrix} \pd{\ln N}{(c_j, \eta)} 
+= \mathbb{I} - \begin{pmatrix}c_i\\\eta\end{pmatrix} \pd{\ln V}{(c_j, \eta)} 
+\]
+
+Можно показать, что для случая, когда $V$ линейно-однородна по $c_i, \eta$, $(c_i,\,
+\eta)$ --- правый собственный вектор с собственным
+значением $0$, а любой ему ортогональный - левый со значением $1$. Значит должен
+существовать единственный левый собственный вектор с собственным значением $0$,
+который будем обозначать $(\omega_i,\, \chi)$.
+
+Линейная комбинация уравнений с коэффициентами $\omega_i, \chi$ дает:
+\[
+\zeta\pd{p}{t} - \chi\pd{p}{t}
++ \sum_i \omega_i \div \mathbf{Q}_i + \chi \div \mathbf{J} = 0,
+\]
+где 
+\[-\zeta = \left(\sum_i \omega_i N_i + \chi H\right) \pd{\ln V}{p}\]
+
+\section{Дискретизация уравнений массы и энергии}
+Запишем полностью неявную дискретизацию уравнений переноса массы и энергии
+\begin{align}
+&\frac{\hat N_i - N_i}{\tau} + \div {\hat{\mathbf{Q}}_i} = \hat S_i\\
+&\frac{\hat E - E}{\tau} + \div {\hat{\mathbf{J}}} = \hat T
+\end{align}
+Символом $\hat{}$ обозначено значение на верхнем слое по времени. Для решения этих
+уравнений применяется итерационный метод Ньютона ($m$ --- номер итерации):
+\begin{align*}
+N_i^{(m)} &+ \sum_j \left(\pd{N_i}{c_j}\right)^{(m)}\delta c_j + 
+\left(\pd{N_i}{\eta}\right)^{(m)} \delta \eta 
++\left(\pd{N_i}{p}\right)^{(m)} (p^{(m+1)} - p^{(m)})\\
+&-\tau\div \sum_\alpha 
+b_\alpha^{(m)}
+c_{i,\alpha}^{(m)}
+\varphi_\alpha^{(m)}
+\left(\nabla p^{(m+1)} - \rho^{(m)}_\alpha \mathbf{g}\right)\\
+&= N_i^{(0)} + \tau S_i^{(m)}
++ \tau \left(\pd{S_i}{p}\right)^{(m)}(p^{(m+1)} - p^{(m)})\\
+%
+E^{(m)} &+ \sum_j \left(\pd{H}{c_j}\right)^{(m)}\delta c_j + 
+\left(\pd{H}{\eta}\right)^{(m)} \delta \eta 
++\left[\left(\pd{H}{p}\right)^{(m)} - 1\right]
+(p^{(m+1)} - p^{(m)})\\
+&-\tau\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\left(\nabla p^{(m+1)} - \rho^{(m)}_\alpha \mathbf{g}\right)\\
+&= E^{(0)} + \tau T^{(m)}
++ \tau \left(\pd{T}{p}\right)^{(m)}(p^{(m+1)} - p^{(m)})
+\end{align*}
+
+Здесь $b_\alpha$ обозначено произведение $KB n_\alpha$
+Возьмем линейную комбинацию этих уравнений с 
+множителями $\omega_i, \chi$ определенными ранее. При этом вариации по $c_j,
+\eta$ исключаются из результирующего уравнения:
+\begin{align*}
+&\left[
+\sum_i\omega_i^{(m)}\left(\pd{N_i}{p}\right)^{(m)} +
+\chi^{(m)}\left(\pd{H}{p}\right)^{(m)} - \chi^{(m)}\right]
+(p^{(m+1)} - p^{(m)})\\
+&-\sum_i\tau\omega_i^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+c_{i,\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\left(\nabla p^{(m+1)} - \rho^{(m)}_\alpha \mathbf{g}\right)\\
+&-\tau\chi^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\left(\nabla p^{(m+1)} - \rho^{(m)}_\alpha \mathbf{g}\right) = \\
+= &\sum_i \omega_i^{(m)}\left(N_i^{(0)} - N_i^{(m)}\right) + 
+\chi^{(m)} \left(E^{(0)} - E^{(m)}\right)\\
+&+ \sum_i \tau \omega_i^{(m)} S_i^{(m)} + \tau\chi^{(m)} T^{(m)} \\
+&+ \tau 
+\left[\sum_i \omega_i^{(m)} \left(\pd{S_i}{p}\right)^{(m)}
++ \chi^{(m)}\left(\pd{T}{p}\right)^{(m)} \right]
+(p^{(m+1)} - p^{(m)})
+\end{align*}
+
+Величина, стоящая в первых квадратных скобках есть $\zeta^{(m)}$.
+Обозначим 
+\[
+\sigma^{(m)} \equiv -\left[\sum_i \omega_i^{(m)} \left(\pd{S_i}{p}\right)^{(m)}
++ \chi^{(m)}\left(\pd{T}{p}\right)^{(m)}\right]
+\]
+Собирая слева члены только с $p^{(m+1)}$, получаем:
+
+\begin{align*}
+&\left(\zeta^{(m)} + \tau\sigma^{(m)}\right) p^{(m+1)}\\
+&-\sum_i\tau\omega_i^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+c_{i,\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\grad p^{(m+1)} \\
+&-\tau\chi^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\grad p^{(m+1)} \\
+{}={} &\left(\zeta^{(m)} + \tau\sigma^{(m)}\right) p^{(m)}\\
+&-\sum_i\tau\omega_i^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+c_{i,\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\rho^{(m)}_\alpha \mathbf{g}\\
+&-\tau\chi^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\rho^{(m)}_\alpha \mathbf{g} \\
+&+\sum_i \omega_i^{(m)}\left(N_i^{(0)} - N_i^{(m)} + \tau S_i^{(m)}\right) + 
+\chi^{(m)} \left(E^{(0)} - E^{(m)} + \tau T^{(m)}\right)
+\end{align*}
+
+Таким образом, вклад источников проявляется в добавках
+\begin{align}
+\tilde N_i^{(m)} &= N_i^{(0)} + \tau S_i^{(m)}\\
+\tilde E^{(m)} &= E^{(0)} + \tau T^{(m)}\\
+\tilde \zeta^{(m)} &= \zeta^{(m)} + \tau\sigma^{(m)}
+\end{align}
+а уравнения остаются формально такими же, как и для случая без источников.
+
+Уравнение для давления:
+\begin{align*}
+&\tilde \zeta^{(m)} p^{(m+1)}\\
+&-\sum_i\tau\omega_i^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+c_{i,\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\grad p^{(m+1)} \\
+&-\tau\chi^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\grad p^{(m+1)} \\
+{}={}&\tilde \zeta^{(m)} p^{(m)}\\
+&-\sum_i\tau\omega_i^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+c_{i,\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\rho^{(m)}_\alpha \mathbf{g}\\
+&-\tau\chi^{(m)}\div \sum_\alpha 
+b_\alpha^{(m)} 
+h_{\alpha}^{(m)} 
+\varphi_\alpha^{(m)}
+\rho^{(m)}_\alpha \mathbf{g} \\
+&+\sum_i \omega_i^{(m)}\left(\tilde N_i^{(m)} - N_i^{(m)}\right) + 
+\chi^{(m)} \left(\tilde E^{(m)} - E^{(m)}\right)
+\end{align*}
+
+Уравнение для концентраций:
+\[
+\frac{N_i^{(m+1)} - \tilde N_i^{(m)}}{\tau} + \div \mathbf{Q}_i^{(m+1)} = 0
+\]
+
+Уравнение для энергии:
+\[
+\frac{E^{(m+1)} - \tilde E^{(m)}}{\tau} + \div \mathbf{J}^{(m+1)} = 0
+\]
+
+\section{Задача о фазовом равновесии}
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{c|c|c|c|c|c|c}
+\multicolumn{1}{c}{$\diagdown$}&
+\multicolumn{1}{c}{L (нефть)}&
+\multicolumn{1}{c}{G (газ)}&
+\multicolumn{1}{c}{W (вода)}&
+\multicolumn{1}{c}{S (скелет)}&
+\multicolumn{1}{c}{K (кероген)}&
+\multicolumn{1}{c}{}\\
+\cline{2-6}
+$\mathrm{H_2O}$& & $c_0 - \omega$ & $\omega$ & & & $c_0$\\
+\cline{1-6}
+$\mathrm{C_5H_{12}}$& $\lambda_1$ & $c_1 - \lambda_1$ & & & & $c_1$\\
+\cline{2-6}
+$\mathrm{C_{10}H_{22}}$& $\lambda_2$ & $c_2 - \lambda_2$ & & & & $c_2$\\
+\cline{1-6}
+$\mathrm{C_{15}H_{32}}$& $c_3$ & & & & & $c_3$\\
+\cline{1-6}
+$\mathrm{N_2}$& & $c_4$ & & & & $c_4$\\
+\cline{2-6}
+$\mathrm{CO_2}$& & $c_5$ & & & & $c_5$\\
+\cline{2-6}
+$\mathrm{O_2}$& & $c_6$ & & & & $c_6$\\
+\cline{1-6}
+$\mathrm{Ske}$& & & & $c_7$ & & $c_7$\\
+\cline{2-6}
+$\mathrm{Ker}$& & & & & $c_8$ & $c_8$\\
+\cline{2-6}
+\multicolumn{1}{c}{}&
+\multicolumn{1}{c}{$\lambda$}&
+\multicolumn{1}{c}{$\gamma$}&
+\multicolumn{1}{c}{$\omega$}&
+\multicolumn{1}{c}{}\\
+\end{tabular}
+\caption{Распределение компонент по фазам}
+\end{table}
+
+Как указывалось выше, требуется решение усложненной задачи о фазовом равновесии,
+а именно: при известных $c_i, p, \eta$ найти $T$ и распределение компонент по
+фазам.
+
+Предлагается следующее распределение компонент по фазам:
+\begin{itemize}
+\item Одна компонента $\mathrm{H_2O}$ --- может существовать в фазе $G$ и $W$.
+\item $N_{LO}$ компонент --- легкие нефти --- могут существовать в фазах $L$ и
+$G$.
+\item $N_{HO}$ компонент --- тяжелые нефти --- могут существовать только в фазе
+$L$.
+\item $N_{G}$ компонент --- нерастворимые газы --- могут существовать только в
+фазе $G$.
+\item $N_{S}$ компонент --- неподвижные компоненты-фазы --- существуют каждая в
+своей фазе.
+\end{itemize}
+
+Неизвестными являются $\omega, \lambda_i, T$ --- $N_{LO} + 2$ неизвестных.
+
+Задачу можно сформулировать в виде задачи нелинейного программирования
+\begin{align*}
+\phi &= \omega \varkappa_0(p,T) + \sum_{i=1}^{N_{LO}} \lambda_i \varkappa_i(p,
+T) +\\
+&+ \sum_{i=1}^{N_{LO}} L(\lambda_i) - L(\lambda) + \\
+&+ L(c_0 - \omega) + \sum_{i=1}^{N_{LO}} L(c_i - \lambda_i) 
+- L(s - \lambda - \omega) \rightarrow \min_{\lambda_i, \omega}\\
+&\text{При ограничениях}\\
+\eta &= 
+\sum_{i=0}^{N_{LO}+N_{HO}+N_{G}+N_{S}} c_i h_i(p,T)
+-\omega h_{0,G-W}(p,T) 
+-\sum_{i=1}^{N_{LO}} \lambda_i h_{i,G-L}(p,T) \\
+0& \leq \omega \leq c_0\\
+0& \leq \lambda_i \leq c_i, \qquad i = 1,2,\dots,N_{LO}
+\end{align*}
+Здесь
+\begin{itemize}
+\item $\phi$ --- с точностью до множителя $RT$ и аддитивной константы потенциал
+Гиббса
+\item $\varkappa_i(p, T) = \ln K_i(p, T)$ --- логарифмы от констант
+равновесия
+\item $\lambda_i, \omega$ --- молярные доли жидких
+компонент $i$ и жидкой воды
+\item $c_i$ --- молярная доля каждого компонента в
+жидко-скелетной смеси
+\item $L(x) \equiv x \ln x$
+\item \begin{align*}
+s &\equiv \sum_{i=0}^{N_{LO}+N_{HO}+N_{G}} c_i\\
+\lambda &\equiv \sum_{i=1}^{N_{LO}} \lambda_i + \sum_{i = N_{LO} +
+1}^{N_{LO}+N_{HO}}c_i\\
+\gamma &\equiv s - \lambda - \omega
+\end{align*}
+\item $h_{i,G-\alpha}(p,T)$ --- удельная энтальпия парообразования
+(положительная величина)
+\item $h_i(p,T)$ --- молярные энтальпии компонент в ``основной'' фазе. Для воды
+и легких нефтей ``основной'' фазой является $G$.
+\end{itemize}
+
+Заметим, что задача сформулирована сразу для всех компонент, а не отдельно для
+флюидов. Кроме распределения по фазам $c_{i,\alpha}$
+и объемных долей $\theta_\alpha = \frac{v_\alpha}{V}$ необходимо найти еще
+производные $\pd{V}{c_i}, \pd{V}{\eta}, \pd{V}{p}$. В силу однородной постановки
+задачи, $V$ будет однородной функцией относительно $c_i$ и $\eta$ первой степени, то есть
+\[\sum_j \pd{V}{c_j}c_j + \pd{V}{\eta}\eta = V.\]
+
+\subsection{Свойства решений}
+
+Задача оптимизации поддается решению в исходной постановке, однако задача о
+производных решения оказывается некорректной. Наилучший результат в этой области
+гласит, что дифференциал $dV$ есть кусочно-линейный функционал $dc_j$ (фактически,
+$V$ не имеет сильной производной, лишь производные по каждому направлению. При
+этом имеется конечное число конусов вариаций $dc_j$, в которых производная является сильной).
+Практически же, производная перестает существовать в областях, где вариация
+параметров может включать и выключать ограничения типа неравенства. В нашей
+задаче это соответствует областям, в которых исчезают фазы.
+
+Второй проблемой в дифференцировании по параметрам является изменение структуры
+множества ограничений при вариации параметров. В нашей задаче эта проблема
+возникает при обращении в ноль концентраций $c_j$. При этом двустороннее
+ограничение типа неравенства превращается в ограничение типа равенства, и
+производная перестает существовать.
+
+Первой проблемы можно избежать, если запретить задаче иметь решение на границе
+области. Практически, это реализуется методом внутренних барьеров, которые
+превращают задачу с ограничениями типа равенств и неравенств в задачу только с
+равенствами. Более того, для метода внутренней точки наличие логарифмических
+барьеров является частью алгоритма. Можно ограничиться некоторым предельным
+значением амплитуды барьера, при котором его можно считать мало влияющим на
+решение, и этим самым избежать проблемы достижения границы области.
+
+Однако, барьеры невозможно ввести, если ограничение вырождается в равенство.
+Поэтому предлагается ограничить минимальное значение $c_i$ некоторой
+величиной или в начале производить коррекцию $c_i := \frac{c_i + \epsilon}{1 +
+n\epsilon}$. Можно даже корректировать решение обратно линейными поправками, когда будут
+посчитаны производные $\pd{\bullet}{c_i}$, однако в этом случае нужно аккуратно
+следить за выполнением всех ограничений в задаче.
+
+\subsection{Метод логарифмических барьеров}
+
+Для начала необходимо произвести коррекцию функционала 
+\[
+\psi = \phi - \varepsilon \left[
+\ln \omega + \ln (c_0 - \omega) + 
+\sum_{i=1}^{N_{LO}} \Big( \ln \lambda_i
++ \ln (c_i - \lambda_i) \Big) 
+\right]
+\]
+После такой коррекции в области будет существовать локальный минимум,
+находящийся вблизи истинного минимума.
+
+Тогда решение задачи необходимо является стационарной точкой функции $\psi$ и
+дополнительно удовлетворяет $\eta - h = 0$. Мы не составляем функцию Лагранжа,
+поскольку $\psi$ не минимизируется по температуре $T$:
+\begin{equation}
+0 = \mathbf{F}(\mathbf{x}) \equiv
+\begin{cases}
+ \pd{\psi}{\omega}\\
+ \pd{\psi}{\lambda_i}\\
+ \eta - h
+\end{cases}
+\label{eq:system}
+\end{equation}
+где $\mathbf{x} = (\omega, \lambda_i, T)$.
+
+Система \eqref{eq:system} далее решается методом Ньютона:
+\begin{align}
+\Delta \mathbf{x}_k &= -\left(\pd{\mathbf{F(\mathbf{x}_k)}}{\mathbf{x}}\right)^{-1}
+\mathbf{F}(\mathbf{x}_k)\\
+\mathbf{x}_{k+1} &= \mathbf{x}_k + \alpha_k \Delta \mathbf{x}_k\\
+\alpha_k &= \min(1, \beta \alpha_{k, \max})
+\end{align}
+
+Чтобы не выйти за границу области определения функции используется ограничитель
+шага $\alpha_k \leq 1$. Когда $\alpha_k = 1$ шаг происходит согласно обычному
+методу Ньютона. $\alpha_{k, \max} > 0$ --- это максимальное такое число, что
+$\mathbf{x}_k + \alpha_{k,\max} \Delta \mathbf{x}_{k}$ еще принадлежит области
+$\omega \in [0,c_0], \lambda_i \in [0, c_i], T \geq T_{\min}$. Множитель $\beta
+< 1$ (типично $\beta = 0.9 \dividesymbol 0.99$) используется, чтобы новое приближение
+было строго внутри области.
+
+Полученное решение легко продифференцировать по параметрам:
+
+\begin{align*}
+&\mathbf{F}(\mathbf{x}(\boldsymbol \alpha), \boldsymbol \alpha) = 0\\
+&\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\mathbf{x}} \pd{\mathbf{x}}{\boldsymbol \alpha} +
+\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\boldsymbol \alpha} = 0\\
+&\pd{\mathbf{x}}{\boldsymbol \alpha} =
+-\left(\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\mathbf{x}}\right)^{-1}
+\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\boldsymbol \alpha} \\
+\end{align*}
+
+\subsubsection{Функция $\mathbf{F}$}
+
+Функция $\mathbf{F}$ состоит из производных по $\omega, \lambda_i$ функции
+$\psi$:
+\begin{align*}
+\phi &= \omega \varkappa_0(p,T) + \sum_{i=1}^{N_{LO}} \lambda_i \varkappa_i(p,
+T) +\\
+&+ \sum_{i=1}^{N_{LO}} L(\lambda_i) - L(\lambda) + \\
+&+ L(c_0 - \omega) + \sum_{i=1}^{N_{LO}} L(c_i - \lambda_i) 
+- L(\gamma) - \\
+&- \varepsilon \left[
+\ln \omega + \ln (c_0 - \omega) + 
+\sum_{i=1}^{N_{LO}} \Big( \ln \lambda_i
++ \ln (c_i - \lambda_i) \Big) 
+\right]
+\end{align*}
+и функции $\eta - h$.
+
+\begin{align*}
+\pd{\mathbf{\psi}}{\omega} &= \varkappa_0(p, T) - L'(c_0 - \omega) + L'(\gamma) 
+- \frac{\varepsilon}{\omega} + \frac{\varepsilon}{c_0 - \omega}\\
+\pd{\mathbf{\psi}}{\lambda_i} &= \varkappa_i(p, T) + L'(\lambda_i) - L'(\lambda)
+- L'(c_i - \lambda_i) + L'(\gamma) - \frac{\varepsilon}{\lambda_i}
++ \frac{\varepsilon}{c_i - \lambda_i}\\
+\eta - h &= 
+\eta - \sum_{i=0}^{N_{LO}+N_{HO}+N_{G}+N_{S}} c_i h_i(p,T)
++\omega h_{0,G-W}(p,T) 
++\sum_{i=1}^{N_{LO}} \lambda_i h_{i,G-L}(p,T)
+\end{align*}
+
+\subsubsection{Матрица $\pd{\mathbf{F}}{\mathbf{x}}$}
+
+Матрица $\pd{\mathbf{F}}{\mathbf{x}}$ состоит из:
+\[
+\pd{\mathbf{F}}{\mathbf{x}} = 
+\begin{pmatrix}
+\pd{{}^2\psi}{\omega^2} & \pd{{}^2\psi}{\omega \partial \lambda_i} & \pd{{}^2
+\psi}{\omega \partial T}\\
+\pd{{}^2\psi}{\omega \partial \lambda_j} & \pd{{}^2\psi}{\lambda_i \partial
+\lambda_j} & \pd{{}^2
+\psi}{\lambda_j \partial T}\\
+-\pd{h}{\omega} & -\pd{h}{\lambda_i} & -\pd{h}{T}\\
+\end{pmatrix}
+\]
+\begin{align*}
+\pd{{}^2\psi}{\omega^2} &= L''(c_0 - \omega) - L''(\gamma) +
+\frac{\varepsilon}{\omega^2} + \frac{\varepsilon}{(c_0 - \omega)^2}\\
+\pd{{}^2\psi}{\omega \partial \lambda_i} &= - L''(\gamma)\\
+\pd{{}^2\psi}{\lambda_i \partial \lambda_j} &=
+\delta_{ij} \Big(L''(\lambda_i) + L''(c_i - \lambda_i) +
+\frac{\varepsilon}{\lambda_i^2} + \frac{\varepsilon}{(c_i - \lambda_i)^2}\Big) - L''(\lambda) 
+- L''(\gamma)\\
+\pd{{}^2\psi}{\omega \partial T} &= \pd{\varkappa_0(p, T)}{T} \\
+\pd{{}^2\psi}{\lambda_i \partial T} &= \pd{\varkappa_i(p, T)}{T}\\
+-\pd{h}{\omega} &= h_{0, G-W}(p, T)\\
+-\pd{h}{\lambda_i} &= h_{i, G-L}(p, T)\\
+-\pd{h}{T} &=
+\omega \pd{h_{0,G-W}(p,T)}{T}
++\sum_{i=1}^{N_{LO}} \lambda_i \pd{h_{i,G-L}(p,T)}{T}
+-\sum_{i=0}^{N_{LO}+N_{HO}+N_{G}+N_{S}} c_i \pd{h_i(p,T)}{T}
+\end{align*}
+
+\subsubsection{Матрица $\pd{\mathbf{F}}{\mathbf{\boldsymbol\alpha}}$}
+
+Параметрами фазового равновесия $\boldsymbol\alpha$ являются $p, \eta, c_i$.
+
+Производные по $p$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial p} &= \pd{\varkappa_0(p,T)}{p}\\
+\pd{{}^2\psi}{\lambda_i \partial p} &= \pd{\varkappa_0(p,T)}{p}\\
+\pd{(\eta - h)}{\omega \partial p} &= 
+\omega \pd{h_{0,G-W}(p,T)}{p}
++\sum_{i=1}^{N_{LO}} \lambda_i \pd{h_{i,G-L}(p,T)}{p}
+-\sum_{i=0}^{N_{LO}+N_{HO}+N_{G}+N_{S}} c_i \pd{h_i(p,T)}{p}
+\end{align*}
+
+Производные по $\eta$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial \eta} &= 0\\
+\pd{{}^2\psi}{\lambda_i \partial \eta} &= 0\\
+\pd{(\eta - h)}{\omega \partial \eta} &= 1
+\end{align*}
+
+Производные по $c_0$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial c_0} &= -L''(c_0 - \omega) + L''(\gamma) 
+- \frac{\varepsilon}{(c_0 - \omega)^2}\\
+\pd{{}^2\psi}{\lambda_i \partial c_0} &= L''(\gamma)\\
+\pd{(\eta - h)}{\omega \partial c_0} &= -h_{0}(p,T)
+\end{align*}
+
+Производные по $c_j, \quad j = 1,2,\dots,N_{LO}$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial c_j} &= L''(\gamma)\\
+\pd{{}^2\psi}{\lambda_i \partial c_j} &= 
+-\delta_{ij}\left(L''(c_i - \lambda_i) +
+\frac{\varepsilon}{(c_i - \lambda_i)^2}\right)
++ L''(\gamma)\\
+\pd{(\eta - h)}{\omega \partial c_j} &= -h_{j}(p,T)
+\end{align*}
+
+Производные по $c_j, \quad j = N_{LO}+1,\dots,N_{LO}+N_{HO}$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial c_j} &= 0\\
+\pd{{}^2\psi}{\lambda_i \partial c_j} &= -L''(\lambda)\\
+\pd{(\eta - h)}{\omega \partial c_j} &= -h_{j}(p,T)
+\end{align*}
+
+Производные по $c_j, \quad j = N_{LO}+N_{HO}+1,\dots,N_{LO}+N_{HO}+N_{G}$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial c_j} &= L''(\gamma)\\
+\pd{{}^2\psi}{\lambda_i \partial c_j} &= L''(\gamma)\\
+\pd{(\eta - h)}{\omega \partial c_j} &= -h_{j}(p,T)
+\end{align*}
+
+Производные по $c_j, \quad j =
+N_{LO}+N_{HO}+N_{G}+1,\dots,N_{LO}+N_{HO}+N_{G}+N_{S}$:
+\begin{align*}
+\pd{{}^2\psi}{\omega \partial c_j} &= 0\\
+\pd{{}^2\psi}{\lambda_i \partial c_j} &= 0\\
+\pd{(\eta - h)}{\omega \partial c_j} &= -h_{j}(p,T)
+\end{align*}
+
+\end{document}
