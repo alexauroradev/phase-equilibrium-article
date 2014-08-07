@@ -16,6 +16,8 @@
 \renewcommand{\div}{\operatorname{div}}
 \newcommand{\grad}{\operatorname{grad}}
 \renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\leq}{\leqslant}
 
 \newtheorem{note}{Примечание}[section]
 
@@ -290,7 +292,7 @@ $\mathrm{Gran}$& & & & & $c_8$ & $c_8$\\
 Расчет фазового равновесия обычно является отдельным блоком при моделировании процессов разработки месторождения. Уравнения баланса компонентов и энергии, использующиеся в моделях, в общем случае являются нелинейными. Поэтому кроме фазовых составов и объемных долей фаз $\theta_\alpha = {v_\alpha}/{V}$ (вычисляются по фазовым составам), обычно необходимо найти еще
 производные $\pd{V}{c_i}, \pd{V}{\eta}, \pd{V}{p}$. Эти производные используются в итерационном процессе (например, методе Ньютона). Альтернативой точного вычисления производных является использование их разностных аналогов, однако это существенно увеличивает время расчета.
 
-\subsection{Особенности вычисления производных}
+\subsection{Особенности вычисления производных} \label{ss:derivatives}
 
 Задача вычисления фазовых составов поддается решению в исходной постановке. Однако, если требуется вычисление производных молярного объема, возникает ряд проблем. Наилучший результат в этой области гласит, что дифференциал $dV$ есть кусочно-линейный функционал $dc_i$ (фактически, $V$ не имеет сильной производной, лишь производные по каждому направлению. При этом имеется конечное число конусов вариаций $dc_i$, в которых производная является сильной). По сути, производная перестает существовать в областях, где исчезают фазы.
 
@@ -302,8 +304,61 @@ $\mathrm{Gran}$& & & & & $c_8$ & $c_8$\\
 
 \section{Метод решения}
 
+В соответствии с рассуждениями в секции \ref{ss:derivatives} произведем коррекцию функционала $\tilde \mu$ в задаче \eqref{eq:pproblem}:
 
+\begin{equation}
+\psi = \tilde\mu - \varepsilon \left[
+\ln \omega + \ln (c_0 - \omega) + 
+\sum_{i=1}^{N_{LO}} \Big( \ln \lambda_i
++ \ln (c_i - \lambda_i) \Big) 
+\right]
+\end{equation}
 
+После такой коррекции строго внутри области будет существовать локальный минимум функционала $\psi$, находящийся вблизи истинного минимума функционала $\tilde\mu$.
+
+Тогда решение задачи необходимо является стационарной точкой функции $\psi$ и дополнительно удовлетворяет $\eta - h = 0$, где $h$ --- заданное значение молярной энтальпии. Отметим, что функция Лагранжа не составляется, поскольку $\psi$ не минимизируется по температуре $T$:
+
+\begin{equation}
+0 = \mathbf{F}(\mathbf{x}) \equiv
+\begin{cases}
+ \pd{\psi}{\omega}\\
+ \pd{\psi}{\lambda_i}\\
+ \eta - h
+\end{cases},
+\label{eq:system}
+\end{equation}
+где $\mathbf{x} = (\omega, \lambda_i, T)$.
+
+Система \eqref{eq:system} далее решается модифицированным методом Ньютона:
+
+\begin{equation}
+\left\{
+\begin{aligned}
+\Delta \mathbf{x}_k &= -\left(\pd{\mathbf{F(\mathbf{x}_k)}}{\mathbf{x}}\right)^{-1}
+\mathbf{F}(\mathbf{x}_k)\\
+\mathbf{x}_{k+1} &= \mathbf{x}_k + \alpha_k \Delta \mathbf{x}_k\\
+\alpha_k &= \min(1, \beta \alpha_{k, \max})
+\end{aligned}
+\right.
+\label{eq:newton}
+\end{equation}
+
+В методе \eqref{eq:newton} используется ограничитель шага $\alpha_k \leq 1$ для того, чтобы не выйти за границу области определения функции. Когда $\alpha_k = 1$ шаг происходит согласно обычному методу Ньютона. $\alpha_{k, \max} > 0$ --- это максимальное число, такое что $\mathbf{x}_k + \alpha_{k,\max} \Delta \mathbf{x}_{k}$ еще принадлежит области $\omega \in [0,c_0], \lambda_i \in [0, c_i]$, а также выполняется условие $T \geq T_{\min}$ \textbf{[Что это?]}. Множитель $\beta < 1$ (типично $\beta = 0.9 \dividesymbol 0.99$) используется, чтобы новое приближение было строго внутри области.
+
+Решение задачи легко аналитически продифференцировать по параметрам:
+
+\begin{equation}
+\begin{aligned}
+&\mathbf{F}(\mathbf{x}(\boldsymbol \alpha), \boldsymbol \alpha) = 0\\
+&\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\mathbf{x}} \pd{\mathbf{x}}{\boldsymbol \alpha} +
+\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\boldsymbol \alpha} = 0\\
+&\pd{\mathbf{x}}{\boldsymbol \alpha} =
+-\left(\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\mathbf{x}}\right)^{-1}
+\pd{\mathbf{F}(\mathbf{x}, \boldsymbol \alpha)}{\boldsymbol \alpha} \\
+\end{aligned}
+\end{equation}
+
+\section{Результаты}
 
 \begin{thebibliography}{9}
     \addcontentsline{toc}{section}{\refname}
