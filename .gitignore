@@ -3,4 +3,7 @@
 *.swp
 *.gz
 *.pdf
+*.o
+log
+main
 document.*
