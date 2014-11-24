@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS= -O3 -g
+CXXFLAGS= -O0 -g
 
 LIBS=
 
@@ -8,8 +8,8 @@ all: main
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-main: main.o PhaseSolver.o
+main: Phases.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f *.o main *~ out.csv
+	rm -f *.o main *~ res.csv
