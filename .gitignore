@@ -4,6 +4,10 @@
 *.gz
 *.pdf
 *.o
+*.blg
+*.bbl
+*.csv
+*.out
 log
 main
 document.*
